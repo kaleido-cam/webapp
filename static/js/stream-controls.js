@@ -1,5 +1,3 @@
-const STREAM_URL = 'https://stream.kaleido.cam/kaleido-01/kaleidoscope/whep';
-
 const video = document.getElementById('video');
 const statusInd = document.getElementById('liveIndicator');
 const statusText = document.getElementById('statusText');
@@ -8,7 +6,7 @@ let peerConnection = null;
 let reconnectTimer = null;
 let isReconnecting = false;
 
-async function startStream() {
+async function startStream(stream_url) {
     if (peerConnection) {
         peerConnection.close();
     }
@@ -31,7 +29,7 @@ async function startStream() {
         const state = peerConnection.iceConnectionState;
         console.log("ICE State:", state);
         if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-            attemptReconnect();
+            attemptReconnect(stream_url);
         }
     };
 
@@ -41,13 +39,20 @@ async function startStream() {
         await peerConnection.setLocalDescription(offer);
 
         // 5. Send Offer to MediaMTX
-        const response = await fetch(STREAM_URL, {
+        const response = await fetch(stream_url, {
             method: 'POST',
             headers: {'Content-Type': 'application/sdp'},
             body: offer.sdp
         });
 
-        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+        if (!response.ok) {
+            if (response.status === 404) {
+                updateStatus("offline")
+                setTimeout(() => attemptReconnect(stream_url), 15000);
+                return
+            }
+            throw new Error(`Server returned ${response.status}`);
+        }
 
         // 6. Handle Answer
         const answerSdp = await response.text();
@@ -58,11 +63,11 @@ async function startStream() {
 
     } catch (err) {
         console.error("Connection failed:", err);
-        attemptReconnect();
+        attemptReconnect(stream_url);
     }
 }
 
-function attemptReconnect() {
+function attemptReconnect(stream_url) {
     if (isReconnecting) return;
     isReconnecting = true;
 
@@ -74,7 +79,7 @@ function attemptReconnect() {
     reconnectTimer = setTimeout(() => {
         isReconnecting = false;
         console.log("Attempting to reconnect...");
-        startStream();
+        startStream(stream_url);
     }, 2000); // Retry every 2 seconds
 }
 
@@ -183,7 +188,3 @@ function lazyChangeApiState(key, value) {
         changeApiState(key, value);
     }, 250);
 }
-
-// Start immediately on load
-startStream();
-

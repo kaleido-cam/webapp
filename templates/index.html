@@ -2,6 +2,7 @@
 
 {% block scripts %}
     <script src="{{ url_for('static', filename='js/stream-controls.js') }}"></script>
+    <script>startStream('{{ stream_url }}');</script>
 {% endblock %}
 
 {% block content %}

@@ -1,14 +1,18 @@
 from flask import Flask, render_template, request
+from flask.cli import load_dotenv
 from flask_htmx import HTMX
 import os
 import requests
 from logging import basicConfig, getLogger, INFO
+
+load_dotenv()
 
 basicConfig(level=INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = getLogger(__name__)
 
 DATABASE = ":memory:"
 CONTROL_SERVER_BASE_URL = os.getenv("CONTROL_SERVER_BASE_URL", "http://172.16.33.3:8000")
+STREAM_BASE_URL = os.getenv("STREAM_BASE_URL", "https://stream.kaleido.cam")
 app = Flask(__name__)
 htmx = HTMX(app)
 
@@ -18,9 +22,13 @@ def index():
     # TODO: read current brightness and frequency from application state
     current_brightness = 15
     current_frequency = 200
+    stream_url = f"{STREAM_BASE_URL}/kaleido-01/kaleidoscope/whep"
     return render_template("index.html",
                            current_brightness=current_brightness,
-                           current_frequency=current_frequency)
+                           current_frequency=current_frequency,
+                           stream_url=stream_url
+                           )
+
 
 @app.route("/api/state", methods=["GET", "POST"])
 def state():
