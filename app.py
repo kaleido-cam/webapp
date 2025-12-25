@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask_socketio import SocketIO, emit
 # from flask_htmx import HTMX
 import requests
 from wtforms import StringField
@@ -14,6 +15,7 @@ logger = getLogger(__name__)
 
 app = Flask(__name__)
 # htmx = HTMX(app)
+socketio = SocketIO(app)
 
 app.config.update({
     "SECRET_KEY": config.SECRET_KEY,
@@ -114,5 +116,9 @@ def state():
         }, 200
 
 
+@socketio.on('json')
+def handle_json(json):
+    print('received json: ' + str(json))
+
 if __name__ == "__main__":
-    app.run()
+    socketio.run(app)
