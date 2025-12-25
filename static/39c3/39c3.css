@@ -103,15 +103,25 @@ body {
 
 h1, h2, h3 {
     font-family: 'KarioDuplexVar', sans-serif;
-    color: var(--color-primary);
 }
 
 h1 {
+    color: var(--color-primary);
     animation: font_weight_wave 2s ease-in;
+}
+
+h2, h3 {
+    color: var(--color-dark);
+    background-color: var(--color-secondary);
+    padding: 0.5rem;
 }
 
 p {
     font-family: 'OfficerSans', sans-serif;
+}
+
+.container {
+    box-shadow: 0 0 6px var(--color-primary-tint-01);
 }
 
 @keyframes font_weight_wave {
