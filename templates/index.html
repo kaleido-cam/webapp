@@ -4,6 +4,7 @@
     <script src="{{ url_for('static', filename='js/stream-controls.js') }}"></script>
     <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/motor-controls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/yt-embed.js') }}"></script>
     <script>startStream('{{ stream_url }}');</script>
 {% endblock %}
 
@@ -18,7 +19,7 @@
         </div>
 
         <div class="video-wrapper">
-            <video id="video" autoplay muted playsinline></video>
+            <video id="stream" autoplay muted playsinline></video>
             <button onclick="toggleFullscreen()">
                 <span class="maximize-video">{% include "svg/maximize.svg" %}</span>
                 <span class="minimize-video" style="display: none">{% include "svg/minimize.svg" %}</span>
@@ -30,7 +31,7 @@
                 <div id="frequency_label">{{ current_frequency }} Hz</div>
                 <input oninput="changeFrequency(this.value)" type="range" id="frequency_slider" name="speed" min="-500"
                        max="500" step="10" value="{{ current_frequency }}">
-                <label for="frequency_slider">Frequency</label>
+                <label for="frequency_slider">Motor Frequency</label>
                 <div class="button-group">
                     <button onclick="rotateCounterClockwise()"
                             class="btn-primary">{% include "svg/rotate-ccw.svg" %}</button>
@@ -43,7 +44,55 @@
                 <div id="brightness_label">{{ current_brightness }} %</div>
                 <input oninput="changeBrightness(this.value)" type="range" id="brightness_slider" name="brightness"
                        min="0" max="50" value="{{ current_brightness }}">
-                <label for="brightness_slider">Brightness</label>
+                <label for="brightness_slider">LED Brightness</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>About</h2>
+        <div class="about-section">
+            <div>
+                <p>
+                    The Kaleido Cam is a device that allows you to see and interact with a kaleidoscope.
+                    The idea was sparked since I discovered a beautiful kaleidoscope in Fujikawaguchiko.
+                    This project allows multiple people to enjoy the kaleidoscope at the same time via the internet.
+                </p>
+                <h3>The project</h3>
+                <p>
+                    It boils down to simple components:
+                </p>
+                <ul>
+                    <li>A Raspberry Pi with the Camera Module</li>
+                    <li>A stepper motor</li>
+                    <li>A dimmable LED</li>
+                    <li>A couple 3d printed parts</li>
+                </ul>
+                <p>Software, schematics and CAD files are <a href="https://github.com/kaleido-cam" target="_blank">available
+                    on {% include "svg/github.svg" %} GitHub</a>.</p>
+                </ul>
+                </p>
+                <h3>The artist</h3>
+                <p>
+                    The kaleidoscope was created by Chaihana Glass.
+                    The artist is not affiliated with this project.
+                    I appreciate their work very much, and you can find more of their art here:
+                </p>
+                <ul>
+                    <li><a href="https://www.instagram.com/chaihana_glass" target="_blank">chaihana_glass
+                        on {% include "svg/instagram.svg" %} Instagram</a></li>
+                    <li><a href="https://www.youtube.com/@glasschaihana6656" target="_blank">glasschaihana6656
+                        on {% include "svg/youtube.svg" %} YouTube</a></li>
+                </ul>
+            </div>
+            <div class="centered">
+                <video class="small-video" src="{{ url_for('static', filename='video/motor-rotating.mp4') }}" loop
+                       autoplay muted playsinline></video>
+                <div class="yt-placeholder tsmall-video" style="height: 290px"
+                     onclick="embedYoutubeVideo(this, 'Fcc4OLGrj_k')">
+                    {% include "svg/youtube.svg" %} <br/>
+                    Enable YouTube content
+                </div>
             </div>
         </div>
     </div>

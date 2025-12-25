@@ -1,4 +1,4 @@
-const video = document.getElementById('video');
+const video = document.getElementById('stream');
 const statusInd = document.getElementById('liveIndicator');
 const statusText = document.getElementById('statusText');
 
