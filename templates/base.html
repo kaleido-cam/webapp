@@ -9,8 +9,25 @@
 <body>
 
 <header>
-    <h2>kaleido.cam</h2>
+    <a href="{{ url_for("index") }}"><h2>kaleido.cam</h2></a>
 </header>
+
+<div id="toast-container">
+{#    <div class="toast toast-error">#}
+{#        DER TOAST#}
+{#        <button class="closebtn" onclick="this.parentElement.style.display='none';">&times;</button>#}
+{#    </div>#}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="toast toast-{{ category }}">
+                    {{ message }}
+                    <button class="closebtn" onclick="this.parentElement.style.display='none';">&times;</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
 
 {% block content %}{% endblock %}
 

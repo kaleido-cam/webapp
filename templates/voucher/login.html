@@ -1,0 +1,22 @@
+{% extends 'voucher/base.html' %}
+
+{% block content %}
+    <div class="container" style="max-width: 400px">
+        <h2>Voucher Login</h2>
+        <form method="POST" action="{{ url_for('voucher_login') }}">
+            {{ form.hidden_tag() }}
+            {% if form.token.errors %}
+                <ul class="errors">
+                    {% for error in form.token.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <div class="form-group">
+                {{ form.token.label }}<br>
+                {{ form.token(size=32, class_="form-control") }}
+            </div>
+            <input type="submit" value="Login" class="btn btn-primary">
+        </form>
+    </div>
+{% endblock %}

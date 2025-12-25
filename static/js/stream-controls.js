@@ -169,15 +169,49 @@ function rotateClockwise() {
     }, 1000);
 }
 
-function changeApiState(key, value) {
+async function changeApiState(key, value) {
     console.log(`[API] Change ${key} to: ${value}`);
-    fetch("api/state", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({[key]: value})
-    });
+    try {
+        const response = await fetch("api/state", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({[key]: value})
+        });
+        if (!response.ok) {
+            if (response.status === 403) {
+                toastMessage(`You don't have permission to set ${key}=${value}.`, "error");
+            } else if (response.status === 400) {
+                const errorData = await response.json();
+                toastMessage(`${key}=${value} is invalid: ${errorData.message}`, "error");
+            } else if (response.status >= 500) {
+                toastMessage(`ServerError: Unable to set ${key}=${value}.`, "error");
+            } else {
+                toastMessage(`Failed to set ${key}=${value}.`, "error");
+            }
+        }
+    } catch (error) {
+        toastMessage("NetworkError: Unable to reach the server.", "error");
+        console.error(error);
+    }
+}
+
+function toastMessage(message, category="") {
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${category}`;
+    toast.innerText = message;
+    const toastContainer = document.querySelector("#toast-container");
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add("visible");
+    }, 100);
+    setTimeout(() => {
+        toast.classList.remove("visible");
+        setTimeout(() => {
+            toastContainer.removeChild(toast);
+        }, 300);
+    }, 3000);
 }
 
 let debounceTimer;
