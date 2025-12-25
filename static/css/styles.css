@@ -8,6 +8,7 @@
     --success-color: #28a745;
     --warning-color: #ffc107;
     --disabled-color: #555555;
+    --button-text-color: #ffffff;
 }
 
 body {
@@ -164,6 +165,7 @@ header a {
 .slider-group input {
     width: 100%;
     cursor: pointer;
+    accent-color: var(--accent-color);
 }
 
 .slider-group label {
@@ -197,7 +199,7 @@ button:hover {
 
 .btn-primary {
     background-color: var(--accent-color);
-    color: white;
+    color: var(--button-text-color);
 }
 
 .btn-danger {
