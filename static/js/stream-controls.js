@@ -93,6 +93,7 @@ function updateStatus(state) {
         case 'connected':
             statusInd.classList.add('connected');
             statusText.innerText = "Live";
+            offlineOverlay.style.display = "none";
             setUIEnabled(true);
             break;
         case 'reconnecting':
