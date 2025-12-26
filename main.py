@@ -10,6 +10,8 @@ import config
 from logging import basicConfig, getLogger, INFO
 from flask_wtf import FlaskForm
 
+from exceptions import ControlServerError
+
 basicConfig(level=INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = getLogger(__name__)
 
@@ -77,33 +79,25 @@ def state():
         brightness = request.json.get("brightness", None)
         frequency = request.json.get("frequency", None)
         if brightness is not None:
-            brightness = int(brightness)
-            # Control server allows 100, but that produces excessive heat
-            if brightness < 0 or brightness > 50:
+            try:
+                change_light_brightness(brightness)
+            except ValueError as ve:
                 return {
                     "error": "INVALID_BRIGHTNESS_RANGE",
-                    "message": "Brightness must be between 0 and 50",
+                    "message": str(ve),
                 }, 400
-            try:
-                resp = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/hardware/light",
-                                     json={"brightness": brightness})
-                resp.raise_for_status()
-            except requests.RequestException:
-                logger.exception("Failed to set brightness")
-                return {"error": "Unable to reach kaleido hardware. Please try again later."}, 500
+            except ControlServerError as e:
+                return {"error": "HARDWARE_FAILURE", "message": str(e)}, 500
         if frequency is not None:
-            frequency = int(frequency)
-            if frequency < -2000 or frequency > 2000:
+            try:
+                change_motor_frequency(frequency)
+            except ValueError as ve:
                 return {
                     "error": "INVALID_FREQUENCY_RANGE",
-                    "message": "Frequency must be between -2000 and 2000",
+                    "message": str(ve),
                 }, 400
-            try:
-                resp = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/hardware/motor", json={"frequency": frequency})
-                resp.raise_for_status()
-            except requests.RequestException:
-                logger.exception("Failed to set motor frequency")
-                return {"error": "Unable to reach kaleido hardware. Please try again later."}, 500
+            except ControlServerError as e:
+                return {"error": "HARDWARE_FAILURE", "message": str(e)}, 500
         # TODO: persist brightness and frequency to application state. Return brightness and frequency as confirmation
         return {"status": "success"}, 200
     elif request.method == "GET":
@@ -115,10 +109,53 @@ def state():
             "frequency": current_frequency
         }, 200
 
+def change_motor_frequency(frequency):
+    frequency = int(frequency)
+    if frequency < -2000 or frequency > 2000:
+        raise ValueError("Frequency must be between -2000 and 2000")
 
-@socketio.on('json')
-def handle_json(json):
-    print('received json: ' + str(json))
+    try:
+        resp = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/hardware/motor", json={"frequency": frequency})
+        resp.raise_for_status()
+    except (requests.RequestException, requests.ConnectionError):
+        logger.exception("Failed to set motor frequency")
+        raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
+
+def change_light_brightness(brightness):
+    brightness = int(brightness)
+    # Control server allows 100, but that produces excessive heat
+    if brightness < 0 or brightness > 50:
+        raise ValueError("Brightness must be between 0 and 50")
+
+    try:
+        resp = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/hardware/light",
+                             json={"brightness": brightness})
+        resp.raise_for_status()
+    except requests.RequestException:
+        logger.exception("Failed to set brightness")
+        raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
+
+@socketio.on('frequency')
+def ws_handle_frequency(value):
+    try:
+        change_motor_frequency(value)
+    except ValueError as e:
+        emit('error', {'error': 'INVALID_FREQUENCY_RANGE', 'message': str(e)})
+    except ControlServerError as e:
+        emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
+    else:
+        emit('current_frequency', value, broadcast=True)
+
+@socketio.on('brightness')
+def ws_handle_brightness(value):
+    try:
+        change_light_brightness(value)
+    except ValueError as e:
+        emit('error', {'error': 'INVALID_BRIGHTNESS_RANGE', 'message': str(e)})
+    except ControlServerError as e:
+        emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
+    else:
+        emit('current_brightness', value, broadcast=True)
 
 if __name__ == "__main__":
     socketio.run(app)

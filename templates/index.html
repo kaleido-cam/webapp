@@ -36,20 +36,20 @@
             <div class="slider-group">
                 <div id="frequency_label">{{ current_frequency }} Hz</div>
                 <input oninput="changeFrequency(this.value)" type="range" id="frequency_slider" name="speed" min="-500"
-                       max="500" step="10" value="{{ current_frequency }}">
+                       max="500" step="10" disabled value="{{ current_frequency }}">
                 <label for="frequency_slider">Motor Frequency</label>
                 <div class="button-group">
                     <button onclick="rotateCounterClockwise()"
-                            class="btn-primary">{% include "svg/rotate-ccw.svg" %}</button>
-                    <button onclick="changeFrequency(0)" class="btn-primary">{% include "svg/octagon.svg" %}</button>
-                    <button onclick="rotateClockwise()" class="btn-primary">{% include "svg/rotate-cw.svg" %}</button>
+                            disabled class="btn-primary">{% include "svg/rotate-ccw.svg" %}</button>
+                    <button onclick="changeFrequency(0)" disabled class="btn-primary">{% include "svg/octagon.svg" %}</button>
+                    <button onclick="rotateClockwise()" disabled class="btn-primary">{% include "svg/rotate-cw.svg" %}</button>
                 </div>
             </div>
 
             <div class="slider-group">
                 <div id="brightness_label">{{ current_brightness }} %</div>
                 <input oninput="changeBrightness(this.value)" type="range" id="brightness_slider" name="brightness"
-                       min="0" max="50" value="{{ current_brightness }}">
+                       min="0" max="50" disabled value="{{ current_brightness }}">
                 <label for="brightness_slider">LED Brightness</label>
             </div>
         </div>

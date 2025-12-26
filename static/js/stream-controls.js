@@ -7,8 +7,6 @@ let peerConnection = null;
 let reconnectTimer = null;
 let isReconnecting = false;
 
-// TODO: file contains motor control stuff. Get rid of it. Ideally move to websocket control.
-
 async function startStream(stream_url) {
     if (peerConnection) {
         peerConnection.close();
@@ -94,23 +92,19 @@ function updateStatus(state) {
             statusInd.classList.add('connected');
             statusText.innerText = "Live";
             offlineOverlay.style.display = "none";
-            setUIEnabled(true);
             break;
         case 'reconnecting':
             statusInd.classList.add('reconnecting');
             statusText.innerText = "Connection lost. Retrying...";
-            setUIEnabled(false);
             break;
         case 'connecting':
             statusInd.classList.add('reconnecting');
             statusText.innerText = "Connecting...";
-            setUIEnabled(false);
             break;
         default:
             statusInd.classList.add('error');
             statusText.innerText = "Offline";
             offlineOverlay.style.display = "flex";
-            setUIEnabled(false);
     }
 }
 
@@ -134,96 +128,3 @@ addEventListener("fullscreenchange", (event) => {
         document.querySelector(".minimize-video").style.display = "block";
     }
 })
-
-function setUIEnabled(enabled) {
-    document.querySelectorAll(".controls input").forEach(input => {
-        input.disabled = !enabled;
-    });
-    document.querySelectorAll(".controls button").forEach(button => {
-        button.disabled = !enabled;
-    });
-}
-
-function changeBrightness(value) {
-    document.querySelector("#brightness_label").innerText = `${value} %`;
-    lazyChangeApiState("brightness", value);
-    document.querySelector("#brightness_slider").value = value;
-}
-
-function changeFrequency(value) {
-    document.querySelector("#frequency_label").innerText = `${value} Hz`;
-    lazyChangeApiState("frequency", value);
-    document.querySelector("#frequency_slider").value = value;
-}
-
-function rotateCounterClockwise() {
-    setUIEnabled(false);
-    changeFrequency(-1000);
-    setTimeout(() => {
-        changeFrequency(0);
-        setUIEnabled(true);
-    }, 1000);
-}
-
-function rotateClockwise() {
-    setUIEnabled(false);
-    changeFrequency(1000);
-    setTimeout(() => {
-        changeFrequency(0);
-        setUIEnabled(true);
-    }, 1000);
-}
-
-async function changeApiState(key, value) {
-    console.log(`[API] Change ${key} to: ${value}`);
-    try {
-        const response = await fetch("api/state", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({[key]: value})
-        });
-        if (!response.ok) {
-            if (response.status === 403) {
-                toastMessage(`You don't have permission to set ${key}=${value}.`, "error");
-            } else if (response.status === 400) {
-                const errorData = await response.json();
-                toastMessage(`${key}=${value} is invalid: ${errorData.message}`, "error");
-            } else if (response.status >= 500) {
-                toastMessage(`ServerError: Unable to set ${key}=${value}.`, "error");
-            } else {
-                toastMessage(`Failed to set ${key}=${value}.`, "error");
-            }
-        }
-    } catch (error) {
-        toastMessage("NetworkError: Unable to reach the server.", "error");
-        console.error(error);
-    }
-}
-
-function toastMessage(message, category="") {
-    const toast = document.createElement("div");
-    toast.className = `toast toast-${category}`;
-    toast.innerText = message;
-    const toastContainer = document.querySelector("#toast-container");
-    toastContainer.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add("visible");
-    }, 100);
-    setTimeout(() => {
-        toast.classList.remove("visible");
-        setTimeout(() => {
-            toastContainer.removeChild(toast);
-        }, 300);
-    }, 3000);
-}
-
-let debounceTimer;
-
-function lazyChangeApiState(key, value) {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        changeApiState(key, value);
-    }, 250);
-}

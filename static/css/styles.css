@@ -374,6 +374,7 @@ input[type="submit"] {
 
     .video-wrapper .offline-overlay h2 {
         font-size: 1.3rem;
+        background: var(--danger-color);
     }
 
     .video-wrapper .offline-overlay p {

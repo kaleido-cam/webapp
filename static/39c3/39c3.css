@@ -86,7 +86,7 @@
 
     --bg-color: var(--color-dark);
     --panel-color: var(--color-dark);
-    --toast-bg-color: var(--color-secondary);
+    --toast-bg-color: var(--color-dark);
     --text-color: var(--color-neutral);
     --accent-color: var(--color-primary);
     --danger-color: var(--color-additional-01);
