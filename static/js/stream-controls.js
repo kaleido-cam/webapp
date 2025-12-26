@@ -1,10 +1,13 @@
 const video = document.getElementById('stream');
 const statusInd = document.getElementById('liveIndicator');
 const statusText = document.getElementById('statusText');
+const offlineOverlay = document.getElementById('offlineOverlay');
 
 let peerConnection = null;
 let reconnectTimer = null;
 let isReconnecting = false;
+
+// TODO: file contains motor control stuff. Get rid of it. Ideally move to websocket control.
 
 async function startStream(stream_url) {
     if (peerConnection) {
@@ -105,6 +108,7 @@ function updateStatus(state) {
         default:
             statusInd.classList.add('error');
             statusText.innerText = "Offline";
+            offlineOverlay.style.display = "flex";
             setUIEnabled(false);
     }
 }
