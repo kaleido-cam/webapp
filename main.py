@@ -10,7 +10,7 @@ import config
 from logging import basicConfig, getLogger, INFO
 from flask_wtf import FlaskForm
 
-from exceptions import ControlServerError
+from errors import ControlServerError
 
 basicConfig(level=INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = getLogger(__name__)
@@ -19,6 +19,12 @@ app = Flask(__name__)
 # htmx = HTMX(app)
 socketio = SocketIO(app)
 
+# Simple in-memory "database" for current state
+db = {
+    "current_brightness": 15,
+    "current_frequency": 200,
+}
+
 app.config.update({
     "SECRET_KEY": config.SECRET_KEY,
 })
@@ -26,13 +32,10 @@ app.config.update({
 
 @app.route("/")
 def index():
-    # TODO: read current brightness and frequency from application state
-    current_brightness = 15
-    current_frequency = 200
     stream_url = f"{config.STREAM_BASE_URL}/kaleido-01/kaleidoscope/whep"
     return render_template("index.html",
-                           current_brightness=current_brightness,
-                           current_frequency=current_frequency,
+                           current_brightness=db["current_brightness"],
+                           current_frequency=db["current_frequency"],
                            stream_url=stream_url
                            )
 
@@ -98,15 +101,15 @@ def state():
                 }, 400
             except ControlServerError as e:
                 return {"error": "HARDWARE_FAILURE", "message": str(e)}, 500
-        # TODO: persist brightness and frequency to application state. Return brightness and frequency as confirmation
-        return {"status": "success"}, 200
-    elif request.method == "GET":
-        # TODO: return current brightness and frequency from application state
-        current_brightness = 15
-        current_frequency = 200
         return {
-            "brightness": current_brightness,
-            "frequency": current_frequency
+            "status": "success",
+            "brightness": db["current_brightness"],
+            "frequency": db["current_frequency"]
+        }, 200
+    elif request.method == "GET":
+        return {
+            "brightness": db["current_brightness"],
+            "frequency": db["current_frequency"]
         }, 200
 
 def change_motor_frequency(frequency):
@@ -121,6 +124,7 @@ def change_motor_frequency(frequency):
         logger.exception("Failed to set motor frequency")
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
     socketio.emit('current_frequency', frequency)
+    db["current_frequency"] = frequency
 
 def change_light_brightness(brightness):
     brightness = int(brightness)
@@ -136,6 +140,7 @@ def change_light_brightness(brightness):
         logger.exception("Failed to set brightness")
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
     socketio.emit('current_brightness', brightness)
+    db["current_brightness"] = brightness
 
 @socketio.on('frequency')
 def ws_handle_frequency(value):
