@@ -120,7 +120,7 @@ def change_motor_frequency(frequency):
     except (requests.RequestException, requests.ConnectionError):
         logger.exception("Failed to set motor frequency")
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
-    emit('current_frequency', frequency, broadcast=True)
+    socketio.emit('current_frequency', frequency)
 
 def change_light_brightness(brightness):
     brightness = int(brightness)
@@ -135,7 +135,7 @@ def change_light_brightness(brightness):
     except requests.RequestException:
         logger.exception("Failed to set brightness")
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
-    emit('current_brightness', brightness, broadcast=True)
+    socketio.emit('current_brightness', brightness)
 
 @socketio.on('frequency')
 def ws_handle_frequency(value):
