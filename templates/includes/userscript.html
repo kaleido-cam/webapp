@@ -1,0 +1,25 @@
+<div id="editor-container">
+    <h3>Advanced: Scripts</h3>
+    <textarea id="userscript-code">
+// C Major Octave: C, D, E, F, G, A, H(B), C
+const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+
+for (let i = 0; i < notes.length; i++) {
+  changeFrequency(notes[i]);
+  await wait(200);
+}
+
+await wait(2000);
+
+while (true) {
+  changeFrequency(0);
+  await wait(30000);
+  changeFrequency(2000);
+  await wait(1000);
+}
+    </textarea>
+    <button class="btn-secondary" id="run-userscript-btn" onclick="runUserScript()">▶ Run</button>
+    <button style="display: none" class="btn-danger" id="stop-userscript-btn" onclick="stopUserScript()">■ Stop</button>
+</div>
+
+<script src="{{ url_for('static', filename='js/userscript.js') }}"></script>
