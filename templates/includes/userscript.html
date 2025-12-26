@@ -18,8 +18,8 @@ while (true) {
   await wait(1000);
 }
     </textarea>
-    <button class="btn-secondary" id="run-userscript-btn" onclick="runUserScript()">▶ Run</button>
-    <button style="display: none" class="btn-danger" id="stop-userscript-btn" onclick="stopUserScript()">■ Stop</button>
+    <button class="btn-secondary" id="run-userscript-btn" onclick="runUserScript()">{% include "svg/play.svg" %}</button>
+    <button style="display: none" class="btn-danger" id="stop-userscript-btn" onclick="stopUserScript()">{% include "svg/square.svg" %}</button>
 </div>
 
 <script src="{{ url_for('static', filename='js/userscript.js') }}"></script>

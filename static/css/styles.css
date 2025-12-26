@@ -390,6 +390,20 @@ textarea {
     gap: 1rem;
 }
 
+#editor-container button svg {
+    height: 1.5rem;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+/*#editor-container button {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    gap: 0.5rem;*/
+/*    font-size: 1.5rem;*/
+/*}*/
+
 textarea#userscript-code {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem;
