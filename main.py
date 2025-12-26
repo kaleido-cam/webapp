@@ -120,6 +120,7 @@ def change_motor_frequency(frequency):
     except (requests.RequestException, requests.ConnectionError):
         logger.exception("Failed to set motor frequency")
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
+    emit('current_frequency', frequency, broadcast=True)
 
 def change_light_brightness(brightness):
     brightness = int(brightness)
@@ -134,6 +135,7 @@ def change_light_brightness(brightness):
     except requests.RequestException:
         logger.exception("Failed to set brightness")
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
+    emit('current_brightness', brightness, broadcast=True)
 
 @socketio.on('frequency')
 def ws_handle_frequency(value):
@@ -143,8 +145,6 @@ def ws_handle_frequency(value):
         emit('error', {'error': 'INVALID_FREQUENCY_RANGE', 'message': str(e)})
     except ControlServerError as e:
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
-    else:
-        emit('current_frequency', value, broadcast=True)
 
 @socketio.on('brightness')
 def ws_handle_brightness(value):
@@ -154,8 +154,6 @@ def ws_handle_brightness(value):
         emit('error', {'error': 'INVALID_BRIGHTNESS_RANGE', 'message': str(e)})
     except ControlServerError as e:
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
-    else:
-        emit('current_brightness', value, broadcast=True)
 
 if __name__ == "__main__":
     socketio.run(app)
