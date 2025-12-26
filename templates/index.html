@@ -1,58 +1,13 @@
 {% extends "base.html" %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/stream-controls.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/motor-controls.js') }}"></script>
     <script src="{{ url_for('static', filename='js/yt-embed.js') }}"></script>
-    <script>startStream('{{ stream_url }}');</script>
 {% endblock %}
 
 {% block content %}
     <div class="container">
-        <div class="status-bar">
-        <span>
-            <span id="liveIndicator" class="status-indicator"></span>
-            <span id="statusText">Initializing...</span>
-        </span>
-            <span id="debugInfo"></span>
-        </div>
-
-        <div class="video-wrapper">
-            <video id="stream" autoplay muted playsinline></video>
-            <div class="offline-overlay" id="offlineOverlay" style="display: none">
-                <div>
-                    <h2>Power off</h2>
-                    <p>Please check back later,<br />or watch the demonstration below</p>
-                </div>
-            </div>
-            <button onclick="toggleFullscreen()">
-                <span class="maximize-video">{% include "svg/maximize.svg" %}</span>
-                <span class="minimize-video" style="display: none">{% include "svg/minimize.svg" %}</span>
-            </button>
-        </div>
-
-        <div class="controls">
-            <div class="slider-group">
-                <div id="frequency_label">{{ current_frequency }} Hz</div>
-                <input oninput="changeFrequency(this.value)" type="range" id="frequency_slider" name="speed" min="-500"
-                       max="500" step="10" disabled value="{{ current_frequency }}">
-                <label for="frequency_slider">Motor Frequency</label>
-                <div class="button-group">
-                    <button onclick="rotateCounterClockwise()"
-                            disabled class="btn-primary">{% include "svg/rotate-ccw.svg" %}</button>
-                    <button onclick="changeFrequency(0)" disabled class="btn-primary">{% include "svg/octagon.svg" %}</button>
-                    <button onclick="rotateClockwise()" disabled class="btn-primary">{% include "svg/rotate-cw.svg" %}</button>
-                </div>
-            </div>
-
-            <div class="slider-group">
-                <div id="brightness_label">{{ current_brightness }} %</div>
-                <input oninput="changeBrightness(this.value)" type="range" id="brightness_slider" name="brightness"
-                       min="0" max="50" disabled value="{{ current_brightness }}">
-                <label for="brightness_slider">LED Brightness</label>
-            </div>
-        </div>
+        {% include 'includes/stream.html' %}
+        {% include 'includes/controls.html' %}
     </div>
 
     <div class="container">

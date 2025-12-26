@@ -20,14 +20,22 @@ socket.on("error", (error) => {
 })
 
 socket.on("current_brightness", (value) => {
-    document.querySelector("#brightness_label").innerText = `${value} %`;
+    updateBrightnessLabel(value);
     document.querySelector("#brightness_slider").value = value;
 });
 
 socket.on("current_frequency", (value) => {
-    document.querySelector("#frequency_label").innerText = `${value} Hz`;
+    updateFrequencyLabel(value);
     document.querySelector("#frequency_slider").value = value;
 });
+
+function updateBrightnessLabel(value) {
+    document.querySelector("#brightness_label").innerText = `${value} %`;
+}
+
+function updateFrequencyLabel(value) {
+    document.querySelector("#frequency_label").innerText = `${value} Hz`;
+}
 
 function setUIEnabled(enabled) {
     document.querySelectorAll(".controls input").forEach(input => {
@@ -39,10 +47,12 @@ function setUIEnabled(enabled) {
 }
 
 function changeBrightness(value) {
+    updateBrightnessLabel(value);
     lazyChangeApiState("brightness", value);
 }
 
 function changeFrequency(value) {
+    updateFrequencyLabel(value);
     lazyChangeApiState("frequency", value);
 }
 
@@ -64,14 +74,32 @@ function rotateClockwise() {
     }, 1000);
 }
 
-let debounceTimer;
+function throttle(func, limit) {
+    let isThrottled = false;
+    let savedArgs = null;
 
-function lazyChangeApiState(key, value) {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        changeApiState(key, value);
-    }, 250);
+    return function wrapper(...args) {
+        if (isThrottled) {
+            savedArgs = args;
+            return;
+        }
+
+        func.apply(this, args);
+        isThrottled = true;
+
+        setTimeout(() => {
+            isThrottled = false;
+            if (savedArgs) {
+                wrapper.apply(this, savedArgs);
+                savedArgs = null;
+            }
+        }, limit);
+    };
 }
+
+const lazyChangeApiState = throttle((key, value) => {
+    changeApiState(key, value);
+}, 150);
 
 function changeApiState(key, value) {
     console.log(`[WS] Change ${key} to: ${value}`);

@@ -22,7 +22,7 @@ socketio = SocketIO(app)
 # Simple in-memory "database" for current state
 db = {
     "current_brightness": 15,
-    "current_frequency": 200,
+    "current_frequency": 0,
 }
 
 app.config.update({
@@ -33,14 +33,37 @@ app.config.update({
 @app.route("/")
 def index():
     stream_url = f"{config.STREAM_BASE_URL}/kaleido-01/kaleidoscope/whep"
-    return render_template("index.html",
-                           current_brightness=db["current_brightness"],
-                           current_frequency=db["current_frequency"],
+    return render_template(
+        "index.html",
+        current_brightness=db["current_brightness"],
+        current_frequency=db["current_frequency"],
+        stream_url=stream_url,
+        frequency_step=5,
+    )
+
+
+@app.route("/controls")
+def controls():
+    return render_template(
+        "controls.html",
+        current_brightness=db["current_brightness"],
+        current_frequency=db["current_frequency"],
+        frequency_limit=2000,
+        frequency_step=1,
+    )
+
+
+@app.route("/stream")
+def stream():
+    stream_url = f"{config.STREAM_BASE_URL}/kaleido-01/kaleidoscope/whep"
+    return render_template("stream.html",
                            stream_url=stream_url
                            )
 
+
 class VoucherLoginForm(FlaskForm):
     token = StringField("Token", validators=[DataRequired()])
+
 
 @app.route("/voucher/login", methods=["GET", "POST"])
 def voucher_login():
@@ -58,6 +81,7 @@ def voucher_login():
         else:
             form.token.errors.append("Invalid token")
     return render_template("voucher/login.html", form=form)
+
 
 @app.route("/voucher/create", methods=["GET", "POST"])
 def create_voucher():
@@ -112,6 +136,7 @@ def state():
             "frequency": db["current_frequency"]
         }, 200
 
+
 def change_motor_frequency(frequency):
     frequency = int(frequency)
     if frequency < -2000 or frequency > 2000:
@@ -125,6 +150,7 @@ def change_motor_frequency(frequency):
         raise ControlServerError("Unable to reach kaleido hardware. Please try again later.")
     socketio.emit('current_frequency', frequency)
     db["current_frequency"] = frequency
+
 
 def change_light_brightness(brightness):
     brightness = int(brightness)
@@ -142,6 +168,7 @@ def change_light_brightness(brightness):
     socketio.emit('current_brightness', brightness)
     db["current_brightness"] = brightness
 
+
 @socketio.on('frequency')
 def ws_handle_frequency(value):
     try:
@@ -151,6 +178,7 @@ def ws_handle_frequency(value):
     except ControlServerError as e:
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
 
+
 @socketio.on('brightness')
 def ws_handle_brightness(value):
     try:
@@ -159,6 +187,10 @@ def ws_handle_brightness(value):
         emit('error', {'error': 'INVALID_BRIGHTNESS_RANGE', 'message': str(e)})
     except ControlServerError as e:
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
+
+
+change_light_brightness(15)
+change_motor_frequency(0)
 
 if __name__ == "__main__":
     socketio.run(app)

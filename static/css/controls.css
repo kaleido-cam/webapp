@@ -1,0 +1,12 @@
+.controls {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
+        gap: 3rem;
+    }
+}

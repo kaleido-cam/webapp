@@ -1,0 +1,13 @@
+.controls {
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.controls button {
+    padding: 1rem;
+}
+
+.controls button svg {
+    width: 32px;
+    height: 32px;
+}

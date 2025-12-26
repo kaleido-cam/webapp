@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Kaleido Cam</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/controls.css') }}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='39c3/39c3.css') }}">
+    {% block head %}{% endblock %}
 </head>
 <body>
 
@@ -14,10 +17,10 @@
 </header>
 
 <div id="toast-container">
-{#    <div class="toast toast-error">#}
-{#        DER TOAST#}
-{#        <button class="closebtn" onclick="this.parentElement.style.display='none';">&times;</button>#}
-{#    </div>#}
+    {#    <div class="toast toast-error">#}
+    {#        DER TOAST#}
+    {#        <button class="closebtn" onclick="this.parentElement.style.display='none';">&times;</button>#}
+    {#    </div>#}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -31,6 +34,14 @@
 </div>
 
 {% block content %}{% endblock %}
+<footer>
+    {% block footer %}
+        <ul>
+            <li><a href="{{ url_for("controls") }}">Controls only</a></li>
+            <li><a href="{{ url_for("stream") }}">Stream only</a></li>
+        </ul>
+    {% endblock %}
+</footer>
 
 <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
 {% block scripts %}{% endblock %}
