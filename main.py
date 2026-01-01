@@ -101,6 +101,7 @@ def get_webapp_version() -> str:
 
 def update_webapp():
     subprocess.run(["git", "pull"], check=True)
+    subprocess.run(["sudo", "systemctl", "restart", "kaleido-webapp.service"])
 
 def get_kaleido_hardware_version(hardware_id) -> str:
     res = requests.get(f"{config.CONTROL_SERVER_BASE_URL}/system/version")
