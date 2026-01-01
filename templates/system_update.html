@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>System Update</h1>
+        <form action="{{ url_for('update_system') }}" method="post">
+            {{ form.hidden_tag() }}
+            <table>
+                <tr>
+                    <th>System</th>
+                    <th>Version</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td>Webapp</td>
+                    <td>{{ current_webapp_version }}</td>
+                    <td><button class="btn-secondary" type="submit" name="component" value="webapp">Update now</button></td>
+                </tr>
+                {% for kaleido in kaleidoscopes %}
+                    <tr>
+                        <td>{{ kaleido.name }}</td>
+                        <td>{{ kaleido.current_version }}</td>
+                        <td><button class="btn-secondary" type="submit" name="component" value="kaleido.{{ kaleido.id }}">Update now</button></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </form>
+    </div>
+{% endblock %}

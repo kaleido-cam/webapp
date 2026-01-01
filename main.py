@@ -1,3 +1,5 @@
+import subprocess
+
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from flask_socketio import SocketIO, emit
 # from flask_htmx import HTMX
@@ -12,6 +14,7 @@ from flask_wtf import FlaskForm
 from collections import Counter
 
 from errors import ControlServerError
+from functools import wraps
 
 basicConfig(level=INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = getLogger(__name__)
@@ -30,6 +33,28 @@ db = {
 app.config.update({
     "SECRET_KEY": config.SECRET_KEY,
 })
+
+
+def requires_capability(capability_name):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not session.get(f"has_capability_{capability_name}"):
+                return redirect(url_for('enable_capability', capability=capability_name, next=request.path))
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
+
+def get_enabled_capabilities():
+    """Retrieve the list of enabled capabilities for the current session."""
+    available_capabilities = list(config.CAPABILITY_TOKENS.keys())
+    enabled_capabilities = [
+        cap for cap in available_capabilities if session.get(f"has_capability_{cap}")
+    ]
+    return enabled_capabilities
 
 
 @app.route("/")
@@ -61,26 +86,111 @@ def stream():
     return redirect(url_for("index"))
 
 
-class VoucherLoginForm(FlaskForm):
+class UpdateSystemForm(FlaskForm):
+    component = StringField("Component", validators=[DataRequired()])
+
+
+def get_webapp_version() -> str:
+    try:
+        result = subprocess.run(["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True)
+        commit_hash = result.stdout.strip()
+        return commit_hash
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to get git commit hash: {e}")
+        return "unknown"
+
+def update_webapp():
+    subprocess.run(["git", "pull"], check=True)
+
+def get_kaleido_hardware_version(hardware_id) -> str:
+    res = requests.get(f"{config.CONTROL_SERVER_BASE_URL}/system/version")
+    if res.status_code == 200:
+        return res.json().get("commit_hash", "unknown")
+    return "unknown"
+
+def update_kaleido_hardware(hardware_id) -> bool:
+    try:
+        res = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/system/update")
+        res.raise_for_status()
+        return True
+    except requests.RequestException:
+        logger.exception(f"Failed to update kaleido hardware {hardware_id}")
+        return False
+
+@app.route("/update-system", methods=["GET", "POST"])
+@requires_capability(capability_name="update_system")
+def update_system():
+    form = UpdateSystemForm()
+    if form.validate_on_submit():
+        component = request.form.get("component")
+        if component == "webapp":
+            update_webapp()
+            flash("Webapp updated successfully", "success")
+        elif component.startswith("kaleido."):
+            if update_kaleido_hardware(component):
+                flash(f"{component} updated successfully", "success")
+            else:
+                flash(f"Failed to update {component}", "error")
+        return redirect(url_for("update_system"))
+
+    kaleidoscopes = [
+        {
+            "id": "1",
+            "name": "Kaleidoscope 01",
+            "current_version": get_kaleido_hardware_version("kaleido-01"),
+        }
+    ]
+
+    return render_template(
+        "system_update.html",
+        form=form,
+        current_webapp_version=get_webapp_version(),
+        kaleidoscopes=kaleidoscopes,
+    )
+
+
+class EnableCapabilityForm(FlaskForm):
     token = StringField("Token", validators=[DataRequired()])
 
 
-@app.route("/voucher/login", methods=["GET", "POST"])
-def voucher_login():
-    if not config.VOUCHER_LOGIN_TOKEN:
-        flash("Voucher login is not configured.", "error")
+@app.context_processor
+def inject_user():
+    return dict(
+        user={
+            "capabilities": get_enabled_capabilities(),
+        }
+    )
+
+
+@app.route("/capabilities", methods=["GET", "POST"])
+def list_capabilities():
+    if request.method == "POST":
+        if capability := request.form.get("revoke"):
+            session.pop(f"has_capability_{capability}", None)
+            flash(f'Capability "{capability}" has been revoked.', "success")
+            return redirect(url_for("list_capabilities"))
+
+    return render_template("capabilities/list.html", )
+
+
+@app.route("/capability/<capability>", methods=["GET", "POST"])
+def enable_capability(capability: str):
+    next_page = request.args.get("next")
+    if not config.CAPABILITY_TOKENS.get(capability):
+        flash(f'Capability "{capability}" is not available.', "error")
         return redirect(url_for("index"))
-    if session.get("can_create_voucher"):
-        return redirect(url_for("create_voucher"))
-    form = VoucherLoginForm()
+    if session.get(f"has_capability_{capability}"):
+        return redirect(next_page or url_for("index"))
+    form = EnableCapabilityForm()
     if form.validate_on_submit():
         token = form.token.data
-        if hmac.compare_digest(token, config.VOUCHER_LOGIN_TOKEN):
-            session["can_create_voucher"] = True
-            return redirect(url_for("create_voucher"))
+        if hmac.compare_digest(token, config.CAPABILITY_TOKENS[capability]):
+            session[f"has_capability_{capability}"] = True
+            flash(f'Capability "{capability}" enabled successfully.', "success")
+            return redirect(next_page or url_for("index"))
         else:
             form.token.errors.append("Invalid token")
-    return render_template("voucher/login.html", form=form)
+    return render_template("capabilities/enable.html", form=form, capability=capability, next=next_page)
 
 
 @app.route("/voucher/create", methods=["GET", "POST"])
@@ -168,6 +278,7 @@ def change_light_brightness(brightness):
     socketio.emit('current_brightness', brightness)
     db["current_brightness"] = brightness
 
+
 @socketio.on('connect')
 def ws_handle_connect():
     client_ip = request.remote_addr
@@ -176,6 +287,7 @@ def ws_handle_connect():
 
     if db["connected_clients"].total() == 1:
         wakeup()
+
 
 @socketio.on('disconnect')
 def ws_handle_disconnect():
@@ -210,6 +322,7 @@ def ws_handle_brightness(value):
     except ControlServerError as e:
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
 
+
 @socketio.on('get_current_state')
 def ws_handle_get_current_state():
     emit('current_brightness', db["current_brightness"])
@@ -221,8 +334,10 @@ def standby_mode():
     change_light_brightness(0)
     change_motor_frequency(0)
 
+
 def wakeup():
     change_light_brightness(15)
+
 
 # change_light_brightness(15)
 # change_motor_frequency(0)

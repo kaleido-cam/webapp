@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>Capabilities</h1>
+        <form method="POST" action="{{ url_for('list_capabilities') }}">
+            <table>
+                {% for capability in user.capabilities %}
+                    <tr>
+                        <td><code>{{ capability }}</code></td>
+                        <td>
+                            <button class="btn-danger" type="submit" value="{{ capability }}" name="revoke">Revoke
+                            </button>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="2">
+                            You have no capabilities.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </form>
+    </div>
+{% endblock %}

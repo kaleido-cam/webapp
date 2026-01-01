@@ -10,4 +10,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DATABASE = ":memory:"
 CONTROL_SERVER_BASE_URL = os.getenv("CONTROL_SERVER_BASE_URL", "http://172.16.33.3:8000")
 STREAM_BASE_URL = os.getenv("STREAM_BASE_URL", "https://stream.kaleido.cam")
-VOUCHER_LOGIN_TOKEN = os.getenv("VOUCHER_LOGIN_TOKEN", None)
+
+CAPABILITY_TOKENS = {
+    "update_system": os.getenv("TOKEN_UPDATE_SYSTEM", None),
+    "voucher": os.getenv("TOKEN_VOUCHER", None),
+}

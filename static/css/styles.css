@@ -9,6 +9,7 @@
     --warning-color: #ffc107;
     --disabled-color: #555555;
     --button-text-color: #ffffff;
+    --border-color: #333333;
 }
 
 body {
@@ -75,6 +76,18 @@ h2 {
 
 h3 {
     border-bottom: 2px solid var(--accent-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+th, td {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    text-align: left;
 }
 
 header a {

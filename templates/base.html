@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/controls.css') }}">
 
-{#    <link rel="stylesheet" href="{{ url_for('static', filename='39c3/39c3.css') }}">#}
+    {#    <link rel="stylesheet" href="{{ url_for('static', filename='39c3/39c3.css') }}">#}
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -38,6 +38,12 @@
     {% block footer %}
         <ul>
             <li><a href="{{ url_for("controls") }}">Controls only</a></li>
+            {% if 'update_system' in user.capabilities %}
+                <li><a href="{{ url_for("update_system") }}">Update</a></li>
+            {% endif %}
+            {% if user.capabilities %}
+                <li><a href="{{ url_for("list_capabilities") }}">Capabilities</a></li>
+            {% endif %}
         </ul>
     {% endblock %}
 </footer>
