@@ -38,6 +38,7 @@ def index():
         current_brightness=db["current_brightness"],
         current_frequency=db["current_frequency"],
         stream_url=stream_url,
+        frequency_limit=2000,
         frequency_step=5,
     )
 
@@ -55,10 +56,7 @@ def controls():
 
 @app.route("/stream")
 def stream():
-    stream_url = f"{config.STREAM_BASE_URL}/kaleido-01/kaleidoscope/whep"
-    return render_template("stream.html",
-                           stream_url=stream_url
-                           )
+    return redirect(url_for("index"))
 
 
 class VoucherLoginForm(FlaskForm):

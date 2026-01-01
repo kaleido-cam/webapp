@@ -19,11 +19,10 @@
         <input oninput="changeBrightness(this.value)" type="range" id="brightness_slider" name="brightness"
                min="0" max="50" disabled value="{{ current_brightness }}">
         <label for="brightness_slider">LED Brightness</label>
-        {%  if url_for('controls') != request.path %}
-            <div class="advanced-controls"><a href="{{ url_for('controls') }}">Advanced</a></div>
-        {% endif %}
+        <div class="advanced-controls"><button class="btn-secondary" id="toggle_advanced_button" onclick="toggleAdvancedControls()">Show Advanced Controls</button></div>
     </div>
 </div>
+{% include 'includes/advanced_controls.html' %}
 
 <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/motor-controls.js') }}"></script>

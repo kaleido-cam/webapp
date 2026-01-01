@@ -106,6 +106,18 @@ function changeApiState(key, value) {
     socket.emit(key, value);
 }
 
+function toggleAdvancedControls() {
+    const advControls = document.querySelector("#advanced_controls");
+    const toggleButton = document.querySelector("#toggle_advanced_button");
+    if (advControls.style.display === "none") {
+        advControls.style.display = "block";
+        toggleButton.innerText = "Hide Advanced Controls";
+    } else {
+        advControls.style.display = "none";
+        toggleButton.innerText = "Show Advanced Controls";
+    }
+}
+
 // Legacy code for reference - replaced by socket.io implementation
 // Server still supports the REST API, so feel free to play around :)
 //
