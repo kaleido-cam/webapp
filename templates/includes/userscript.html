@@ -1,11 +1,9 @@
 <div id="editor-container">
     <textarea id="userscript-code">
-// C Major Octave: C, D, E, F, G, A, H(B), C
-const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+const notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
 
 for (let i = 0; i < notes.length; i++) {
-  changeFrequency(notes[i]);
-  await wait(200);
+  await playNote(notes[i], 200);
 }
 
 await wait(2000);
