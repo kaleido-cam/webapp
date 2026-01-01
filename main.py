@@ -189,8 +189,8 @@ def ws_handle_brightness(value):
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
 
 
-change_light_brightness(15)
-change_motor_frequency(0)
+# change_light_brightness(15)
+# change_motor_frequency(0)
 
 if __name__ == "__main__":
     socketio.run(app)

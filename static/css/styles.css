@@ -69,6 +69,14 @@ li {
     margin-bottom: 0.5rem;
 }
 
+h2 {
+    border-bottom: 4px solid var(--accent-color);
+}
+
+h3 {
+    border-bottom: 2px solid var(--accent-color);
+}
+
 header a {
     display: inline-block;
     /*padding: 1rem;*/
@@ -139,6 +147,10 @@ header a {
     top: 0;
     font-size: 2rem;
     text-align: center;
+    background: var(--danger-color);
+    color: var(--bg-color);
+    padding: 0.5rem;
+    border: none;
 }
 
 .video-wrapper .offline-overlay p {
@@ -446,7 +458,6 @@ textarea#userscript-code {
 
     .video-wrapper .offline-overlay h2 {
         font-size: 1.3rem;
-        background: var(--danger-color);
     }
 
     .video-wrapper .offline-overlay p {
