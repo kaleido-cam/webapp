@@ -9,6 +9,7 @@ import hmac
 import config
 from logging import basicConfig, getLogger, INFO
 from flask_wtf import FlaskForm
+from collections import Counter
 
 from errors import ControlServerError
 
@@ -23,6 +24,7 @@ socketio = SocketIO(app)
 db = {
     "current_brightness": 15,
     "current_frequency": 0,
+    "connected_clients": Counter(),
 }
 
 app.config.update({
@@ -166,6 +168,28 @@ def change_light_brightness(brightness):
     socketio.emit('current_brightness', brightness)
     db["current_brightness"] = brightness
 
+@socketio.on('connect')
+def ws_handle_connect():
+    client_ip = request.remote_addr
+    db["connected_clients"][client_ip] += 1
+    socketio.emit('connected_clients', db["connected_clients"].total())
+
+    if db["connected_clients"].total() == 1:
+        wakeup()
+
+@socketio.on('disconnect')
+def ws_handle_disconnect():
+    client_ip = request.remote_addr
+    db["connected_clients"][client_ip] -= 1
+    if db["connected_clients"][client_ip] < 0:
+        logger.error(f"Negative client count for IP {client_ip}")
+    if db["connected_clients"][client_ip] <= 0:
+        del db["connected_clients"][client_ip]
+    socketio.emit('connected_clients', db["connected_clients"].total())
+
+    if db["connected_clients"].total() == 0:
+        standby_mode()
+
 
 @socketio.on('frequency')
 def ws_handle_frequency(value):
@@ -186,6 +210,19 @@ def ws_handle_brightness(value):
     except ControlServerError as e:
         emit('error', {'error': 'HARDWARE_FAILURE', 'message': str(e)})
 
+@socketio.on('get_current_state')
+def ws_handle_get_current_state():
+    emit('current_brightness', db["current_brightness"])
+    emit('current_frequency', db["current_frequency"])
+    emit('connected_clients', db["connected_clients"].total())
+
+
+def standby_mode():
+    change_light_brightness(0)
+    change_motor_frequency(0)
+
+def wakeup():
+    change_light_brightness(15)
 
 # change_light_brightness(15)
 # change_motor_frequency(0)

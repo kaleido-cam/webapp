@@ -3,7 +3,10 @@
         <span id="liveIndicator" class="status-indicator"></span>
         <span id="statusText">Initializing...</span>
     </span>
-    <span id="debugInfo"></span>
+    <div><span id="connected_clients">-</span>
+        <span id="icon-eye-closed">{% include 'svg/eye-closed.svg' %}</span>
+        <span id="icon-eye" style="display: none">{% include 'svg/eye.svg' %}</span>
+    </div>
 </div>
 
 <div class="video-wrapper">

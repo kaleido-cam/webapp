@@ -1,9 +1,8 @@
 const socket = io();
 
 socket.on("connect", () => {
-  console.log(`Connected: ${socket.id}`);
-  socket.emit('json', {data: 'I\'m connected!'});
   setUIEnabled(true);
+  socket.emit("get_current_state");
 });
 
 socket.on("disconnect", () => {
@@ -18,6 +17,17 @@ socket.on("error", (error) => {
         toastMessage(`Error: ${message}`, "error");
     }
 })
+
+socket.on("connected_clients", (count) => {
+    document.querySelector("#connected_clients").innerText = count;
+    if (count > 0) {
+        document.querySelector('#icon-eye').style.display = 'inline';
+        document.querySelector('#icon-eye-closed').style.display = 'none';
+    } else {
+        document.querySelector('#icon-eye').style.display = 'none';
+        document.querySelector('#icon-eye-closed').style.display = 'inline';
+    }
+});
 
 socket.on("current_brightness", (value) => {
     updateBrightnessLabel(value);
