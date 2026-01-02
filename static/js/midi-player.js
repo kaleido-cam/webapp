@@ -56,6 +56,14 @@ async function handleFileDrop(file) {
             row.querySelector(".midi-track-name").textContent = track.name || "Unnamed Track";
             const playButton = row.querySelector("button.btn-play");
             const stopButton = row.querySelector("button.btn-stop");
+
+            function stopSong() {
+                isRunning = false;
+                document.querySelectorAll("#midi-player button.btn-play").forEach(btn => btn.disabled = false);
+                stopButton.disabled = true;
+                changeApiState("frequency", 0);
+            }
+
             playButton.addEventListener("click", async () => {
                 if (isRunning) return;
                 isRunning = true;
@@ -63,13 +71,10 @@ async function handleFileDrop(file) {
                 playButton.disabled = true;
                 stopButton.disabled = false;
                 await playNotes(track["notes"]);
+                stopSong();
             });
             stopButton.addEventListener("click", () => {
-                isRunning = false;
-                document.querySelectorAll("#midi-player button.btn-play").forEach(btn => btn.disabled = false);
-                playButton.disabled = false;
-                stopButton.disabled = true;
-                changeApiState("frequency", 0);
+                stopSong();
             });
             player.appendChild(row);
         });
