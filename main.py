@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit
 # from flask_htmx import HTMX
 import requests
 from wtforms import StringField
+from wtforms.fields.simple import PasswordField
 from wtforms.validators import DataRequired
 import hmac
 
@@ -151,7 +152,7 @@ def update_system():
 
 
 class EnableCapabilityForm(FlaskForm):
-    token = StringField("Token", validators=[DataRequired()])
+    token = PasswordField("Token", validators=[DataRequired()])
 
 
 @app.context_processor
