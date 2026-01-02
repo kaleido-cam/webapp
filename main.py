@@ -202,6 +202,7 @@ def enable_capability(capability: str):
         token = form.token.data
         if hmac.compare_digest(token, config.CAPABILITY_TOKENS[capability]):
             session[f"has_capability_{capability}"] = True
+            session.permanent = True
             flash(f'Capability "{capability}" enabled successfully.', "success")
             return redirect(next_page or url_for("index"))
         else:
