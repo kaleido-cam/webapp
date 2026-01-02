@@ -105,14 +105,17 @@ def update_webapp():
     subprocess.run(["sudo", "systemctl", "restart", "kaleido-webapp.service"])
 
 def get_kaleido_hardware_version(hardware_id) -> str:
-    res = requests.get(f"{config.CONTROL_SERVER_BASE_URL}/system/version")
+    try:
+        res = requests.get(f"{config.CONTROL_SERVER_BASE_URL}/system/version", timeout=2)
+    except requests.RequestException:
+        return "offline"
     if res.status_code == 200:
         return res.json().get("commit_hash", "unknown")
     return "unknown"
 
 def update_kaleido_hardware(hardware_id) -> bool:
     try:
-        res = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/system/update")
+        res = requests.post(f"{config.CONTROL_SERVER_BASE_URL}/system/update", timeout=2)
         res.raise_for_status()
         return True
     except requests.RequestException:
