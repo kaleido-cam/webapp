@@ -100,9 +100,18 @@ def get_webapp_version() -> str:
         logger.error(f"Failed to get git commit hash: {e}")
         return "unknown"
 
-def update_webapp():
+def update_webapp() -> bool:
+    previous_hash = get_webapp_version()
     subprocess.run(["git", "pull"], check=True)
-    subprocess.run(["sudo", "systemctl", "restart", "kaleido-webapp.service"])
+    new_hash = get_webapp_version()
+
+    if previous_hash == new_hash:
+        # No new version available
+        return False
+
+    # Restart with a slight delay, so the response can be sent before the server goes down
+    subprocess.Popen(["/bin/sh", "-c", "sleep 2 && sudo systemctl restart kaleido-webapp.service"])
+    return True
 
 def get_kaleido_hardware_version(hardware_id) -> str:
     try:
@@ -129,8 +138,10 @@ def update_system():
     if form.validate_on_submit():
         component = request.form.get("component")
         if component == "webapp":
-            update_webapp()
-            flash("Webapp updated successfully", "success")
+            if update_webapp():
+                flash("Webapp updated successfully and will restart shortly", "success")
+            else:
+                flash("No new version available")
         elif component.startswith("kaleido."):
             if update_kaleido_hardware(component):
                 flash(f"{component} updated successfully", "success")
