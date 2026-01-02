@@ -59,8 +59,8 @@ async function playNote(note, duration) {
     }
 }
 
-async function playToneJS(instructions) {
-    const notes = instructions["tracks"][0]["notes"];
+async function playToneJS(instructions, track=0) {
+    const notes = instructions["tracks"][track]["notes"];
     const songStartedAt = performance.now();
     for (const noteObj of notes) {
         const startTime = songStartedAt + noteObj["time"] * 1000;
