@@ -1,0 +1,19 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/midi-player.css') }}">
+
+<template id="midi-track">
+    <div class="midi-track">
+        <div style="flex-grow: 1">Track #<span class="midi-track-number">n</span>: <span
+                class="midi-track-name">N/A</span></div>
+        <button class="btn-secondary btn-play">{% include "svg/play.svg" %}</button>
+        <button class="btn-secondary btn-pause" style="display: none">{% include "svg/pause.svg" %}</button>
+        <button class="btn-danger btn-stop" disabled>{% include "svg/square.svg" %}</button>
+    </div>
+</template>
+
+<div id="midi-filedrop" style="display: none">
+    Drop MIDI file here
+</div>
+<div id="midi-player" style="display: none"></div>
+
+<script src="{{ url_for('static', filename='js/midi@2.0.28.js') }}"></script>
+<script src="{{ url_for('static', filename='js/midi-player.js') }}"></script>

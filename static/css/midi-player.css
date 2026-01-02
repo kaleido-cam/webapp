@@ -1,0 +1,29 @@
+#midi-filedrop {
+    padding: 2rem;
+    background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+    border: 5px dashed var(--accent-color);
+    z-index: 9999;
+    pointer-events: none; /* Crucial: allows events to pass through to window */
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color);
+    font-size: 2rem;
+    font-family: sans-serif;
+}
+
+#midi-player {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.midi-track {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-color);
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+}
