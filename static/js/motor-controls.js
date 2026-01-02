@@ -39,12 +39,57 @@ socket.on("current_frequency", (value) => {
     document.querySelector("#frequency_slider").value = value;
 });
 
+/**
+ * Finds the note name for a given frequency based on cent tolerance.
+ * @param {number} frequency - The frequency to check.
+ * @param {number} centTolerance - Max allowed deviation in cents (default 10).
+ * @returns {object|null} - Note data or null if outside tolerance.
+ */
+function getNoteFromFrequency(frequency, centTolerance = 10) {
+    if (frequency < 0) {
+        frequency = -frequency;
+    }
+    if (frequency === 0) {
+        return null;
+    }
+    const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+    // 1. Calculate semitones from A4
+    const n = 12 * Math.log2(frequency / 440);
+
+    // 2. Get the closest integer semitone
+    const roundedN = Math.round(n);
+
+    // 3. Calculate the difference in Cents
+    // (Actual semitones - Ideal semitones) * 100
+    const centDifference = (n - roundedN) * 100;
+
+    // 4. Check if within tolerance
+    if (Math.abs(centDifference) > centTolerance) {
+        return null;
+    }
+
+    // 5. Derive Note and Octave
+    const totalIndex = roundedN + 57; // 57 is the MIDI index for A4
+    const noteName = notes[((totalIndex % 12) + 12) % 12]; // Handle negative indices
+    const octave = Math.floor(totalIndex / 12);
+
+    return `${noteName}${octave}`;
+}
+
 function updateBrightnessLabel(value) {
     document.querySelector("#brightness_label").innerText = `${value} %`;
 }
 
 function updateFrequencyLabel(value) {
-    document.querySelector("#frequency_label").innerText = `${value} Hz`;
+    const label = document.querySelector("#frequency_label");
+
+    const note = getNoteFromFrequency(value);
+    if (note !== null) {
+        label.innerText = note;
+    } else {
+        label.innerText = `${value} Hz`;
+    }
 }
 
 function setUIEnabled(enabled) {
