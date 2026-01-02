@@ -59,6 +59,22 @@ async function playNote(note, duration) {
     }
 }
 
+async function playToneJS(instructions) {
+    const notes = instructions["tracks"][0]["notes"];
+    const songStartedAt = performance.now();
+    for (const noteObj of notes) {
+        const startTime = songStartedAt + noteObj["time"] * 1000;
+        const now = performance.now();
+        if (startTime > now) {
+            await playNote("-", startTime - now);
+        }
+        const note = noteObj["name"];
+        const duration = noteObj["duration"] * 1000;
+        await playNote(note, duration);
+    }
+    changeApiState("frequency", 0);
+}
+
 let isRunning = false;
 
 async function runUserScript() {
