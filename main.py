@@ -1,5 +1,6 @@
 import subprocess
 
+import sentry_sdk
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from flask_socketio import SocketIO, emit
 # from flask_htmx import HTMX
@@ -19,6 +20,13 @@ from functools import wraps
 
 basicConfig(level=INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = getLogger(__name__)
+
+if config.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=config.SENTRY_DSN,
+        traces_sample_rate=0,
+        send_default_pii=False,
+)
 
 app = Flask(__name__)
 # htmx = HTMX(app)
