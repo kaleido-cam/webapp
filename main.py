@@ -118,7 +118,7 @@ def update_webapp() -> bool:
         return False
 
     # Restart with a slight delay, so the response can be sent before the server goes down
-    subprocess.Popen(["/bin/sh", "-c", "sleep 2 && sudo systemctl restart kaleido-webapp.service"])
+    subprocess.Popen(["/bin/sh", "-c", "sleep 2 && uv sync && sudo systemctl restart kaleido-webapp.service"])
     return True
 
 def get_kaleido_hardware_version(hardware_id) -> str:
